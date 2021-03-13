@@ -1,0 +1,223 @@
+Paper...haracter-Aware Neural Language Models by Yoon Kim et. al -
+published on 1st December 2015
+
+Abstract
+
+1. A simple neural language model that relies only on character-level inputs but
+
+predictions are still made at the word-level
+
+2. The model employs a CNN and a highway network over characters, whose output is
+
+given to a LSTM recurrent neural network language model
+
+3. On English Penn Treebank, the model is on par with existing state-of-art with 60%
+
+fewer parameters
+
+4. On languages with rich morphology (Arabic, Czech, French, German, Spanish, Russian),
+the model outperforms word-level/morpheme-level LSTM baselines (with fewer
+parameters)
+
+5. Analysis of word representations obtained from the character composition part of the
+model reveals that the model is able to encode, from characters only, both semantic
+and orthographic information
+
+Introduction
+
+1. A language model is formalised as a probability distribution over a sequence of strings
+
+(words)
+
+2. Traditional methods usually involve making an n-th order Markov assumption and
+estimating n-gram probabilities via counting and subsequent smoothing. This is simple
+to train but probability of rare n-grams can be poorly estimated due to data sparsity
+3. Neural Language Models (NLM) address the n-gram data sparsity issue through
+
+parameterisation of words as vectors and using them as inputs to a NN
+
+ Weakness of NLMs - they are blind to subword information (e.g. morphemes).
+For example, they do not know that "eventful", "eventfully", and
+"uneventfully" should have structurally related embeddings in the vector
+space
+
+ This means that embeddings of rare words can be poorly estimated, leading to
+high perplexities for rare words. This is problematics in morphologically rich
+languages or domains with dynamic vocabularies (e.g. social media)
+
+Models
+
+1. Recurrent Neural Network (RNN)
+
+ At each time step t, an RNN takes the input vector and previous hidden state
+vector to produce the next hidden state (or current) by applying the following
+recursive operation
+
+In theory, RNN can summarise all historical information up to time t with
+hidden state ht. However, learning long-range dependencies with a vanilla
+RNN is difficult due to vanishing/exploding gradients (due to element-wise
+multiplication w.r.t. time)
+
+ LSTM addresses the problem of learning long range dependencies by
+
+augmenting the RNN with a memory cell vector at each time step.
+
+Technically, one step of an LSTM takes as input xt, ht-1, ct-1 and produces ht, ct
+via the following intermediate calculations:
+
+ Memory cells in the LSTM are additive w.r.t. time, alleviating the gradient
+
+vanishing problem
+
+2. RNN Language model
+3. Character-level CNN
+4. Highway Network
+
+ Simple replace xk (word embedding) with yk at each t in the RNN-LM - this
+
+simple model performs well on its own
+
+where t is the transform gate
+1...s the carry gate
+
+ Highway layers allow for training of deep networks by adaptively carrying
+
+some dimensions of the input directly to the output
+
+Experimental Setup
+
+1. Use perplexity (PPL) to evaluate the performance of the models, which is given by:
+
+ where NLL is calculated over the test set. We test the model on corpora of
+
+varying languages and sizes
+
+2. Optimisation
+
+ Picking the best model on the validation set
+ Use dropout, with probability 0.5 for regularisation on the LSTM input-to-
+
+hidden layers and the hidden-to-output softmax layer
+
+ Gradient norm constraint is crucial in training the model. The paper contrained
+
+the L2 norm of the gradient to be below 5
+
+ Employed a hierarchical softmax...ommon strategy for training language
+
+models with very large vocabulary
+
+Results and Discussions
+
+1. The paper ran two versions of the proposed model to assess the trade-off between
+
+performance and size
+
+2. Results
+
+ Our large model is on par with existing state-of-the-art despite having
+
+approximately 60% fewer parameters. Meanwhile, our small model
+significantly outperforms other NLMs of similar size, even though it is
+penalized by the dataset already has OOV words replace by <unk>
+
+3. Other languages
+
+ English is a relatively simple language from a morphological standpoint,
+
+hence why the paper focused on other languages
+
+ On Data-s, the character-level models outperform their word-level
+
+counterparts despite being a smaller model
+
+ The character models also outperform their morphological counterparts
+ The paper used the same architecture for all languages and did not perform
+
+any language-specific tuning of hyperparameters
+
+4. Learned word representations
+
+ By comparing the word representations obtained before and after the
+
+highway layers, the paper was able to observe the following:
+
+ Before highway layers, the representations seem to solely rely on surface
+forms (for example, the nearest neighbours of you are your, young, four,
+youth etc)
+
+ After highway layers, however, the representations seem to enable encoding
+
+of semantic features that are not discernable from orthography alone
+
+ The model is also able to correct for incorrect/non-standard spelling
+
+5. Learned character N-gram representations
+
+ By feeding each character n-gram into CharCNN and use its output as the
+fixed dimensional representation for the corresponding character n-gram,
+the model learns to differentiate between prefixes, suffixes and others
+
+6. Highway layers
+
+ Performance decreases significantly when training a model without any
+
+highway layers
+
+ Having one to two highway layers was important but more highway layers
+
+generally resulted in similar performance
+
+ Having more convolutional layers before max-pooling didn't help
+ Highway layers did not improve models that only used word embeddings as
+
+inputs
+
+7. Effect of corpus/vocab sizes
+
+ The paper also studies the effect of training corpus/vocabulary sizes on the
+
+relative performance between the different models
+
+ The results suggest that the perplexity reductions become less pronounced
+
+as the corpus size increases, we nonetheless find that the character-level
+model outperforms the word-level model in all scenarios
+
+8. Further observations
+
+ Combining word embeddings with the CharCNN's output to form a combined
+
+representation of a word resulted in slightly worse performance. This is a
+surprising result
+
+Related work
+
+1. Neural language models encompass a rich family of neural network architectures for
+
+language modelling
+
+a. Feed-forward
+b. Recurrent
+c. Sum-product
+
+d. Log-bilinear
+e. CNN
+
+2. In order to address rare word problem, a paper represented a word as a set of shared
+factors embeddings. The Factored Neural Language Model (FNLM) can incorporate
+morphemes, word shape information or any other annotation
+
+3. Another direction of work has been purely character level NLMs, wherein both input
+and output are characters. Character-level models obviate the need for morphological
+tagging or manual feature engineering and have the attractive property of being able
+to generate novel words. However, they are generally outperformed by word-level
+models
+
+Conclusion
+
+1. Using CharCNN and highway layers for representation learning (as input into
+
+word2vec) remains an avenue for future work
+
+

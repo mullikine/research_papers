@@ -1,0 +1,167 @@
+Paper 10 | BB_twtr at SemEval-2017 Task 4: Twitter Sentiment Analysis
+with CNNs and LSTMs by Mathieu Clich - published in 2017
+
+Abstract
+
+1. This paper attempt to produce a state-of-the-art Twitter classifier using CNNs and
+
+LSTMs networks
+
+2. The system leverages a large amount of unlabelled data to pre-train word embeddings
+and using a subset of unlabelled data to fine tune the embeddings using distant
+supervision
+
+3. Final CNNs and LSTMs are trained on the SemEval-2017 Twitter dataset (where the
+
+embeddings are fined tune again)
+
+4. To boost performances, we ensemble several CNNs and LSTMs together and this
+approach achieved first rank on all of the five English subtasks amongst the 40 teams
+
+Introduction
+
+1. The SemEval-2017 Twitter competition is divided into five subtasks which involve
+
+standard classification, ordinal classification and distributional estimation
+
+2. Two of the most popular deep learning techniques for sentiment analysis are CNNs
+
+and LSTMs
+
+Models
+
+1. CNN
+
+ The CNN used in this paper is similar to the CNN of Kim (2014)
+ Zero-padding such that all tweets have the same matrix dimension
+
+In practice, the paper used three filter sizes (either [1,2,3], [3,4,5] or [5,6,7])
+and we used a total of 200 filtering matrices for each filter size
+
+ The max-pooling
+
+layer extracts the most important feature for each
+convolution, independently of where in the tweet this feature is located. In
+other words, the CNN's structure effectively extracts the most important n-
+grams in the embedding space
+
+ To reduce overfitting, the paper added a dropout layer after the max-pooling
+
+layer and after the fully-connected hidden layer (50% dropout probability)
+
+2. LSTM
+
+ The main building blocks are two LSTM units
+ The initial hidden state is chosen to be a vector of zeros
+ The simple RNN suffers from the exploding and vanishing gradient problem
+
+during the backpropagation training stage
+
+ LSTMs solves this problem by having a more complex internal structure which
+
+allows LSTMs to remember information for either long or short terms
+
+3. One drawback from LSTM is that it does not sufficiently consider post word
+information because the sentence is read only in one direction (forward). To solve this,
+the paper used a bidirectional LSTM, which is two LSTMs whose outputs are stacked
+together (One reads the sentence forward, the other reads it backward)
+
+4. Again, the paper applied a dropout layer before and after LSTMs and after the fully-
+
+connected hidden layer (50%)
+
+Training strategy
+
+1. To train the models, the paper have access to the following data:
+
+ Human-labelled tweets for different subtasks
+ 100 million unique unlabelled English tweets (from Twitter API)
+
+i. Extracted a distant dataset of 5 million positive and 5 million negative
+
+tweets (simply by looking for ":)" for positive or ":(" for negative)
+
+ii. The rest remains unlabelled data
+
+2. Unsupervised training - Word embeddings
+
+ 100 million unlabelled tweets to pre-train the word embeddings using 3
+
+unsupervised learning algorithms
+
+i. Google's Word2Vec
+ii. Facebook's FastText
+iii. Stanford's GloVe
+
+3. Distant training
+
+ The embeddings learned in the unsupervised phase contain very little
+information about the sentiment polarity of the words since the context for a
+
+positive word (e.g. good) tends to be very similar to the context of a negative
+word (e.g. bad)
+
+ Therefore, to add polarity information to the embeddings, we fine tune the
+embeddings via a distant training phase. To do so, the authors use the CNN
+and initialised the embeddings with the ones learned in the unsupervised
+phase. We then use the distant dataset to train the CNN to classify noisy
+positive tweets vs noisy negative tweets
+
+4. Supervised training
+
+Initialise the CNN and LSTM models with the fine-tuned embeddings of the
+distant training phase, and freeze them for the first ~5 epochs. Then train for
+another ~5 epochs with unfrozen embeddings and a learning rate reduced by
+a factor of 10
+
+ To reduce variance and boost accuracy, the authors ensemble 10 CNNs and 10
+
+LSTMs together through soft voting
+
+ The models ensembled have different random weight initialisations, different
+number of epochs (from 4 to 20), different set of filter sizes and different
+embedding pre-training algorithms
+
+Results
+
+1. To assess the performance of each model, we run the models on the historical Twitter
+set of 2013, 20914, 2015 and 2016 without using any of those sets in the training
+dataset. The historical metric is the average F1 score of the positive and negative class
+
+2. In 2017, the metric of interest is the macro-average recall
+
+ GloVe gives a lower score than both FastText and Word2Vec, therefore the
+
+authors exclude the GloVe variation in the ensemble model
+
+ The absence of class weights or distant training stage lowers the scores
+
+significantly, demonstrating these are great additions
+
+ Even though these individual models give similar scores, their outputs are
+sufficiently uncorrelated such that ensembling them gives the score a small
+boost. To assess how correlated these models are, the authors compute the
+Pearson correlation coefficient between the output probabilities of any pairs
+of models
+
+ The most uncorrelated models come from different supervised learning
+
+models (CNN vs LSTM) and from different unsupervised learning algorithms
+
+ Results of the ensembled model on the 2017 test set
+
+Conclusion
+
+1. The objective was to experiment with deep learning models along with modern
+
+training strategies in an attempt to build the best possible sentiment classifier for
+tweets
+
+2. The final model was an ensemble of 10 CNNs and 10 LSTMs with different hyper-
+parameters and different pre-training strategies. This model participated in all of
+the English subtasks and obtained first rank in all of them
+
+3. For future work, it would be interesting to explore systems that combine a CNN and
+
+an LSTM more organically than through an ensemble model
+

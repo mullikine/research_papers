@@ -1,0 +1,124 @@
+Paper...haracter-level Convolutional Networks for Text Classification by
+Xiang Zhang et. al - published by 4th April 2016
+
+Abstract
+
+1. Empirical exploration on the use of character-level CNN for text classification
+2. Comparisons against traditional models such as BoW, n-grams and their TFIDF
+
+variants, and deep learning models such as word-based CNN and RNN (LSTM)
+
+Introduction
+
+1. Text classification involves assigning predefined categories to free-text documents
+2. Time-delay networks used in early days of deep learning are essentially convolutional
+
+networks that model sequential data
+
+3. This paper is the first to apply CNN only on characters. The paper shows that when
+trained on large-scale datasets, deep CNN do not require the knowledge of words, in
+addition to the conclusion that CNN do not require the knowledge about the syntactic
+or semantic structure of a language
+
+4. Working only on characters also has the advantage that misspellings and emoticons
+
+may be naturally learnt
+
+Character-level CNN
+
+1. The main component is the temporal convolutional module, which simply computes
+a 1-D convolution. The temporal max-pooling allows us to train deeper models. The
+non-linearity used in the model is the rectifier or thresholding function, which is
+similar to ReLUs. The algo used is SGD with a minibatch of 128 using momentum 0.9
+and initial step size of 0.01, which is halved every 3 epoches for 10 times
+
+2. Character embedding consists of 70 characters, including 26 English characters, 10
+
+digits, 33 other characters and the new line character
+
+3. Model design
+
+ The paper designed 2 CNN - one large and one small. Both have 9 layers with
+
+6 convolutional layers and 3 fully-connected layers
+
+ There are 2 dropout modules in between the 3 fully-connected layers to
+
+regularise, with 0.5 probability
+
+Initialise the weights using a Gaussian distribution. The mean and standard
+deviation used for initialising the large model is (0, 0.02) and a small model (0,
+0.05)
+
+4. Data augmentation using Thesaurus
+
+ Useful for controlling generalisation error for deep learning models
+ The best way to do this is to use human rephrases of sentences but this is
+unrealistic and expensive. Therefore, an alternative
+to replace
+words/phrases with their synonyms - use English thesaurus, where every
+synonym to a word or phrase is ranked by the semantic closeness to the most
+frequently seen meaning
+
+is
+
+5. Choice of alphabet
+
+ Whether to distinguish between upper-case and lower-case letters
+ The paper experimented on this choice and observed that it usually gives
+worse results when such distinction is made. One possible reason might be
+that semantics do not change with different letter cases, there is a benefit of
+regularisation
+
+Model comparisons and Results
+
+1. All CNN in the figure are the large models with thesaurus augmentation
+2. Character-level CNN is an effective method
+
+ Our result shows that the proposed model can work for text classification
+without the need for words. This is a strong indication that language could also
+be thought of as a signal no different from any other kind
+
+3. Dataset size forms a dichotomy between traditional and CNN models
+
+ Larger datasets tend to perform better
+ Traditional methods like n-gram TFIDF remain a strong model for dataset of
+size up to several hundreds of thousands and only until the dataset goes to
+scale of several millions do we observe that character-level CNN start to do
+better
+
+4. CNN may work well for user-generated data
+
+ User-generated data vary in the degree of how well the texts are curated
+ Figures 3c, 3d, and 3e show that character-level CNN work better for less
+
+curated user-generated texts
+
+ Further validation is needed to validate the hypothesis that CNN are truly
+
+good at identifying misspellings and emoticons
+
+5. Choice of alphabet makes a difference
+
+ Figure 3f shows that distinguishing between uppercase and lowercase letters
+could make a difference. For million-scale datasets, it seems that not making
+such distinction usually works better
+
+6. Semantics of tasks may not matter
+
+ The datasets consist of two kinds of tasks: sentiment analysis and topic
+classification. This dichotomy in task semantics does not seem to play a role in
+deciding which method is better
+7. Bag-of-means is a misuse of word2vec
+
+ This model performed the worse in every case. This suggests that a simple use
+of a distributed word representation may not give us an advantage to text
+classification
+
+Conclusion
+
+1. On one hand, the analysis shows that character-level CNN is an effective method
+2. However, how well our model performs in comparisons depends on many factors,
+
+such as dataset size, whether the texts are curated and choice of alphabet
+

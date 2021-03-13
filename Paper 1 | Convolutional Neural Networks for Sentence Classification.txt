@@ -1,0 +1,113 @@
+Paper...onvolutional Neural Networks for Sentence Classification by
+Yoon Kim - published 3rd September 2014
+
+Abstract
+
+1. Simple CNN with little hyperparameter tuning and static vectors achieves excellent
+
+results on multiple benchmarks
+
+2. Learning task-specific vectors through fine-tuning further improves performance
+3. Proposed a simple modification to allow for the use of both task-specific and static
+
+vectors
+
+Introduction
+
+1. Word vectors are essentially feature extractors that encode semantic features of
+words in their dimensions. In such dense representations, semantically close words
+are likewise close in Euclidean or cosine distance, in the lower dimensional vector
+space
+
+2. CNN, although originally invented for computer vision, has proven to be effective for
+NLP, having achieved great results in semantic parsing, search query retrieval,
+sentence modelling, and other traditional NLP tasks
+
+Models
+
+a) Model Variations
+
+1. CNN-rand
+
+ Baseline model where all words are randomly initialised and then modified
+
+during training
+
+2. CNN-static
+
+ A model with pre-trained vectors from word2vec. All words, including
+unknown ones that are randomly initialised, are kept static and only the
+other parameters of the model are learned
+
+3. CNN-non-static
+
+ Same as CNN-static but pre-trained vectors are fine-tuned for each task
+
+4. CNN-multichannel
+
+ A model with two sets of word vectors. Each set of vectors is treated as a
+'channel'. Each filter is applied to both channels and the results are added
+to calculate features
+
+ Gradients are only backpropagated through one of the channels
+ Both channels are initialised with word2vec
+
+b) Regularisation
+
+ Dropout with a constraint on l2-norms of weight vectors
+ Dropout prevents co-adaptation of hidden units by randomly dropping out (setting
+
+to zero) a probability p of the hidden units during forward propagation
+
+ At test time, the learned weight vectors are scaled by p such that w_hat = pw and
+
+w_hat is used to score unseen sentences
+
+ Constrain l2-norms of weight vectors by rescaling w to have ||w||2...henever
+
+||w||2...fter a gradient descent step
+
+c) Hyperparameters (chosen via grid search on SST-2 dev set)
+
+ Rectified linear units (ReLU)
+ Filter windows (h) of 3, 4, 5
+ 100 filters for each window (therefore 100 feature maps for each filter window)
+ Dropout rate (p) = 0.5
+
+l2 constraint (s) = 3
+
+Results
+
+a) Multichannel vs Single Channel Models
+
+Initially hope that multichannel architecture would prevent overfitting (by
+ensuring that the learned vectors do not deviate too far from original values) but
+the results were mixed
+
+b) Static vs Non-static representations
+
+ Both the single and multichannel models are able to fine-tune the non-static
+
+channel to make it more specific to the task at-hand
+
+ For randomly initialised tokens (words not in the set of pre-trained vectors), fine-
+tuning allows them to learn more meaningful representations. For example, look
+at exclamation marks and commas
+
+c) Further observations
+
+ Dropout proved to be a good regulariser, allowing to use a larger than necessary
+
+network. Consistently added 2%-4% relative performance
+
+ Obtained slight improvements by sampling each dimension from U[-a,a] where a
+was chosen such that the randomly initialised vectors have the same variance as
+the pre-trained vectors
+
+Conclusion
+
+1. This paper described a series of experiments with CNN built on top of word2vec
+2. The results add to the well-established evidence that unsupervised pre-training of
+
+word vectors is an important ingredient in deep learning for NLP
+
